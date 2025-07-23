@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CIEC Industrial Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ciec-bg': '#111827', // A dark gray, almost black
+                        'ciec-card': '#1f2937', // A slightly lighter dark gray for cards/surfaces
+                        'ciec-border': '#374151', // Border color
+                        'ciec-text-primary': '#f9fafb', // White/very light gray for primary text
+                        'ciec-text-secondary': '#9ca3af', // Lighter gray for secondary text
+                        'ciec-blue': '#2563eb', // Primary blue for buttons and highlights
+                        'ciec-blue-hover': '#1d4ed8',
+                        'ciec-gold': '#f59e0b', // Accent color
+                    },
+                },
+            },
+        };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.6.3",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.525.0",
+    "@react-google-maps/api": "https://esm.sh/@react-google-maps/api@^2.20.7",
+    "recharts": "https://esm.sh/recharts@^3.0.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-ciec-bg">
+<div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
