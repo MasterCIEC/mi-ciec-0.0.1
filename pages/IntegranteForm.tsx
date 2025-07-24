@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Integrante, Establecimiento } from '../types';
 import Spinner from '../components/ui/Spinner';
 import { Save, X, Edit, User, Briefcase, Mail, Phone, Building } from 'lucide-react';
+import PhoneInput from '../components/ui/PhoneInput';
 
 // --- Helper Components ---
 const DetailField = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: any }) => (
@@ -160,7 +161,7 @@ const IntegranteForm: React.FC = () => {
                         <FormInput label="Nombre Completo*" name="nombre_persona" value={formData.nombre_persona || ''} onChange={handleChange} required />
                         <FormInput label="Cargo" name="cargo" value={formData.cargo || ''} onChange={handleChange} />
                         <FormInput label="E-mail" name="email" value={formData.email || ''} type="email" onChange={handleChange} />
-                        <FormInput label="Teléfono" name="telefono" value={formData.telefono || ''} type="tel" onChange={handleChange} />
+                        <PhoneInput label="Teléfono" value={formData.telefono} onChange={(newValue) => setFormData(prev => ({ ...prev, telefono: newValue }))} />
                         <div className="md:col-span-2">
                             <FormSelect label="Establecimiento*" name="id_establecimiento" value={formData.id_establecimiento || ''} onChange={handleChange} required>
                                 <option value="">Seleccione un establecimiento</option>

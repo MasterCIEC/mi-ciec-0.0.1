@@ -15,7 +15,8 @@
     "@supabase/supabase-js": "^2.50.3",
     "lucide-react": "^0.525.0",
     "@react-google-maps/api": "^2.20.7",
-    "recharts": "^3.0.2"
+    "recharts": "^3.0.2",
+    "xlsx": "latest"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Institucion } from '../types';
 import Spinner from '../components/ui/Spinner';
 import { Plus, Trash2, Building } from 'lucide-react';
 
-const Gremios: React.FC = () => {
+interface GremiosProps {
+    searchTerm: string;
+}
+
+const Gremios: React.FC<GremiosProps> = ({ searchTerm }) => {
     const [instituciones, setInstituciones] = useState<Institucion[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,6 +32,17 @@ const Gremios: React.FC = () => {
     useEffect(() => {
         fetchGremios();
     }, []);
+
+    const filteredInstituciones = useMemo(() => {
+        if (!searchTerm) {
+            return instituciones;
+        }
+        const lowercasedFilter = searchTerm.toLowerCase();
+        return instituciones.filter(inst =>
+            inst.nombre.toLowerCase().includes(lowercasedFilter) ||
+            inst.rif.toLowerCase().replace(/-/g, '').includes(lowercasedFilter.replace(/-/g, ''))
+        );
+    }, [instituciones, searchTerm]);
 
     const handleDelete = async (e: React.MouseEvent, rif: string) => {
         // Detiene la propagación del evento para evitar que el Link se active
@@ -57,7 +72,7 @@ const Gremios: React.FC = () => {
                 </Link>
             </div>
             <div className="space-y-3">
-                {instituciones.map(gremio => (
+                {filteredInstituciones.map(gremio => (
                     <Link 
                         key={gremio.rif} 
                         to={`/gremios/editar/${gremio.rif}`}
@@ -87,6 +102,11 @@ const Gremios: React.FC = () => {
                         </div>
                     </Link>
                 ))}
+                {filteredInstituciones.length === 0 && (
+                    <div className="text-center py-10 text-ciec-text-secondary">
+                        <p>No se encontraron gremios que coincidan con su búsqueda.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

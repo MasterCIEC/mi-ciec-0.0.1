@@ -5,7 +5,11 @@ import { Institucion, EstablecimientoFull } from '../types';
 import Spinner from '../components/ui/Spinner';
 import { Building, AlertTriangle } from 'lucide-react';
 
-const Empresas: React.FC = () => {
+interface EmpresasProps {
+    searchTerm: string;
+}
+
+const Empresas: React.FC<EmpresasProps> = ({ searchTerm }) => {
     const [establecimientos, setEstablecimientos] = useState<EstablecimientoFull[]>([]);
     const [instituciones, setInstituciones] = useState<Institucion[]>([]);
     const [loading, setLoading] = useState(true);
@@ -53,10 +57,29 @@ const Empresas: React.FC = () => {
     }, []);
 
     const filteredEstablecimientos = useMemo(() => {
-        if (selectedInstitucion === 'All') return establecimientos;
-        if (selectedInstitucion === '(empty)') return establecimientos.filter(e => !e.afiliaciones || e.afiliaciones.length === 0);
-        return establecimientos.filter(e => e.afiliaciones?.some(a => a.rif_institucion === selectedInstitucion));
-    }, [establecimientos, selectedInstitucion]);
+        let results: EstablecimientoFull[];
+
+        // 1. Filter by Gremio
+        if (selectedInstitucion === 'All') {
+            results = establecimientos;
+        } else if (selectedInstitucion === '(empty)') {
+            results = establecimientos.filter(e => !e.afiliaciones || e.afiliaciones.length === 0);
+        } else {
+            results = establecimientos.filter(e => e.afiliaciones?.some(a => a.rif_institucion === selectedInstitucion));
+        }
+        
+        // 2. Filter by Search Term
+        if (searchTerm) {
+            const lowercasedFilter = searchTerm.toLowerCase();
+            results = results.filter(est => 
+                est.nombre_establecimiento?.toLowerCase().includes(lowercasedFilter) ||
+                est.companias?.razon_social.toLowerCase().includes(lowercasedFilter) ||
+                est.companias?.rif.toLowerCase().replace(/-/g, '').includes(lowercasedFilter.replace(/-/g, ''))
+            );
+        }
+
+        return results;
+    }, [establecimientos, selectedInstitucion, searchTerm]);
     
     const institucionCounts = useMemo(() => {
         const counts: { [key: string]: number } = {'(empty)': 0};
@@ -132,6 +155,11 @@ const Empresas: React.FC = () => {
                             </div>
                         </Link>
                     ))}
+                     {filteredEstablecimientos.length === 0 && (
+                        <div className="text-center py-10 text-ciec-text-secondary">
+                            <p>No se encontraron establecimientos que coincidan con su búsqueda.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

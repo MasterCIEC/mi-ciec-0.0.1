@@ -3,147 +3,58 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Ba
 import { supabase } from '../lib/supabase';
 import { EstablecimientoFull, Institucion } from '../types';
 import Spinner from '../components/ui/Spinner';
-import { Maximize, Building, Users, Share2, Minimize, X } from 'lucide-react';
+import { Maximize, Building, Users, Share2, X } from 'lucide-react';
 
 const COLORS = ['#2563eb', '#f97316', '#10b981', '#ef4444', '#8b5cf6', '#eab308', '#ec4899'];
 
-// --- Componente de Modal Arrastrable y Redimensionable (movido fuera de Graficos) ---
-const ResizableDraggableModal: React.FC<{
+// --- Componente de Modal para Gráfico Expandido ---
+const ExpandedChartModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     title: string;
     children: React.ReactNode;
 }> = ({ isOpen, onClose, title, children }) => {
-    const modalRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isResizing, setIsResizing] = useState(false);
-    const [isMaximized, setIsMaximized] = useState(false);
-    
-    const [position, setPosition] = useState({ x: window.innerWidth / 2 - 450, y: window.innerHeight / 2 - 300 });
-    const [size, setSize] = useState({ width: 900, height: 600 });
-    
-    const [lastPosition, setLastPosition] = useState({ ...position });
-    const [lastSize, setLastSize] = useState({ ...size });
-    
-    const dragStartOffset = useRef({ x: 0, y: 0 });
-
-    const handleDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isMaximized) return;
-        const target = e.target as HTMLElement;
-        if (target.closest('button')) return; 
-        setIsDragging(true);
-        dragStartOffset.current = {
-            x: e.clientX - position.x,
-            y: e.clientY - position.y,
-        };
-    };
-
-    const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation(); 
-        if (isMaximized) return;
-        setIsResizing(true);
-    };
-
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (isDragging) {
-            setPosition({
-                x: e.clientX - dragStartOffset.current.x,
-                y: e.clientY - dragStartOffset.current.y,
-            });
-        }
-        if (isResizing) {
-            setSize(currentSize => ({
-                width: Math.max(400, currentSize.width + e.movementX),
-                height: Math.max(300, currentSize.height + e.movementY),
-            }));
-        }
-    }, [isDragging, isResizing]);
-
-    const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
-        setIsResizing(false);
-    }, []);
-
     useEffect(() => {
-        if(isDragging || isResizing) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+        if (isOpen) {
+            window.addEventListener('keydown', handleEsc);
         }
         return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        }
-    }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
-    
-    const toggleMaximize = () => {
-        if(isMaximized) {
-            setPosition(lastPosition);
-            setSize(lastSize);
-        } else {
-            setLastPosition(position);
-            setLastSize(size);
-            setPosition({ x: 0, y: 0 }); // Reset position for maximization
-            setSize({ width: window.innerWidth, height: window.innerHeight });
-        }
-        setIsMaximized(!isMaximized);
-    };
-
-    useEffect(() => {
-        if (isMaximized) {
-            const handleResize = () => {
-                setSize({ width: window.innerWidth, height: window.innerHeight });
-            };
-            window.addEventListener('resize', handleResize);
-            return () => window.removeEventListener('resize', handleResize);
-        }
-    }, [isMaximized]);
-
+            window.removeEventListener('keydown', handleEsc);
+        };
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
-    
-    const modalStyle: React.CSSProperties = isMaximized ? {
-        top: 0, left: 0, width: '100vw', height: '100vh', transform: 'none', borderRadius: 0, transition: 'all 0.2s ease'
-    } : {
-        transform: `translate(${position.x}px, ${position.y}px)`,
-        width: size.width,
-        height: size.height,
-        transition: isDragging ? 'none' : 'all 0.2s ease',
-    };
 
     return (
         <div 
-            ref={modalRef} 
-            style={modalStyle}
-            className="fixed bg-ciec-card rounded-lg shadow-2xl flex flex-col z-50 border border-ciec-border"
+            className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center transition-opacity"
+            onClick={onClose}
+            aria-modal="true"
+            role="dialog"
         >
             <div 
-                onMouseDown={handleDragStart}
-                className={`flex justify-between items-center p-3 border-b border-ciec-border flex-shrink-0 ${!isMaximized ? 'cursor-move' : ''}`}
+                className="bg-ciec-card rounded-lg shadow-xl w-full max-w-6xl h-[90vh] m-4 transform transition-all flex flex-col"
+                onClick={e => e.stopPropagation()} // Prevent closing when clicking inside modal
             >
-                <h2 className="text-xl font-bold text-ciec-text-primary truncate">{title}</h2>
-                <div className="flex items-center space-x-2">
-                    <button onClick={toggleMaximize} className="text-ciec-text-secondary hover:text-white p-2 rounded-full hover:bg-ciec-border">
-                        {isMaximized ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
-                    </button>
+                <div className="flex justify-between items-center p-4 border-b border-ciec-border flex-shrink-0">
+                    <h2 className="text-xl font-bold text-ciec-text-primary truncate">{title}</h2>
                     <button onClick={onClose} className="text-ciec-text-secondary hover:text-white p-2 rounded-full hover:bg-ciec-border">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
-            </div>
-            <div className="flex-grow p-4 overflow-hidden">
-                {children}
-            </div>
-            {!isMaximized && (
-                <div 
-                    onMouseDown={handleResizeStart}
-                    className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-10"
-                >
-                  <div className="w-full h-full border-r-2 border-b-2 border-ciec-border opacity-50 hover:opacity-100 transition-opacity"></div>
+                <div className="flex-grow p-4 overflow-auto">
+                    {children}
                 </div>
-            )}
+            </div>
         </div>
     );
 };
+
 
 // --- Componentes del Dashboard ---
 const DashboardCard: React.FC<{ title: string; onExpand?: () => void; children: React.ReactNode; className?: string; }> = ({ title, onExpand, children, className }) => (
@@ -189,7 +100,7 @@ const Graficos: React.FC = () => {
                  supabase.from('establecimientos').select(`
                     personal_obrero, personal_empleado, personal_directivo,
                     direcciones ( parroquias ( municipios ( nombre_municipio ) ) ),
-                    clases_caev ( divisiones_caev ( secciones_caev ( nombre_seccion ) ) ),
+                    clases_caev ( divisiones_caev ( secciones_caev ( nombre_seccion, descripcion_seccion ) ) ),
                     afiliaciones ( rif_institucion )
                 `),
                 supabase.from('instituciones').select('rif, nombre'),
@@ -233,8 +144,13 @@ const Graficos: React.FC = () => {
             
             const caevCounts = new Map<string, number>();
             ests.forEach(e => {
-                const seccion = e.clases_caev?.divisiones_caev?.secciones_caev?.nombre_seccion;
-                if (seccion) caevCounts.set(seccion, (caevCounts.get(seccion) || 0) + 1);
+                const seccion = e.clases_caev?.divisiones_caev?.secciones_caev;
+                if (seccion && seccion.nombre_seccion) {
+                    const label = seccion.descripcion_seccion
+                        ? `${seccion.nombre_seccion} - ${seccion.descripcion_seccion}`
+                        : seccion.nombre_seccion;
+                    caevCounts.set(label, (caevCounts.get(label) || 0) + 1);
+                }
             });
             const caevChartData = Array.from(caevCounts.entries()).map(([name, value]) => ({ name, value, })).sort((a,b) => b.value - a.value);
 
@@ -258,7 +174,16 @@ const Graficos: React.FC = () => {
     const tooltipStyle = { 
         backgroundColor: '#1f2937',
         border: '1px solid #374151',
+        borderRadius: '0.5rem',
+    };
+
+    const itemStyle = {
         color: '#f9fafb'
+    };
+    
+    const labelStyle = {
+        color: '#f9fafb',
+        fontWeight: 'bold'
     };
 
     // --- Componentes de Gráficos Reutilizables ---
@@ -268,7 +193,7 @@ const Graficos: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis type="number" stroke="#9ca3af" tick={{ fontSize: 12 }} />
                 <YAxis type="category" dataKey="name" stroke="#9ca3af" width={isExpanded ? 120 : 80} tick={{ fontSize: isExpanded ? 14 : 10 }} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#374151' }} />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={itemStyle} labelStyle={labelStyle} cursor={{ fill: '#374151' }} />
                 <Bar dataKey="value" name="Establecimientos" barSize={isExpanded ? 20 : 15}>
                     {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[0]} />)}
                 </Bar>
@@ -282,7 +207,7 @@ const Graficos: React.FC = () => {
                 <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={isExpanded ? "80%" : "70%"} fill="#8884d8">
                     {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={itemStyle} labelStyle={labelStyle}/>
                 <Legend wrapperStyle={{ fontSize: isExpanded ? '14px' : '12px', paddingTop: '10px' }}/>
             </PieChart>
         </ResponsiveContainer>
@@ -294,7 +219,7 @@ const Graficos: React.FC = () => {
                 <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={isExpanded ? "50%" : "40%"} outerRadius={isExpanded ? "80%" : "70%"} fill="#8884d8" paddingAngle={2}>
                     {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={itemStyle} labelStyle={labelStyle} />
                 <Legend wrapperStyle={{ fontSize: isExpanded ? '14px' : '12px', paddingTop: '10px' }}/>
             </PieChart>
         </ResponsiveContainer>
@@ -343,13 +268,13 @@ const Graficos: React.FC = () => {
             </div>
 
             {expandedChart && (
-                <ResizableDraggableModal 
+                <ExpandedChartModal 
                     isOpen={!!expandedChart} 
                     onClose={() => setExpandedChart(null)} 
                     title={expandedChart.title}
                 >
                     {expandedChart.chart}
-                </ResizableDraggableModal>
+                </ExpandedChartModal>
             )}
             
         </>

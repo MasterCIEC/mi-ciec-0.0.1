@@ -24,24 +24,35 @@ import { GOOGLE_MAPS_API_KEY } from './constants';
 
 const AppContent: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<Page>('Mapa');
+    const [searchTerm, setSearchTerm] = useState('');
     const { isDraggingBubble, isDirty } = useDraft();
+
+    const handleClearSearch = () => {
+      setSearchTerm('');
+      // Optionally, you could trigger a page-specific refresh here if needed
+    };
 
     return (
         <>
             <div className="flex h-screen bg-ciec-bg text-ciec-text-primary">
                 <Sidebar setCurrentPage={setCurrentPage} />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header currentPage={currentPage} />
+                    <Header 
+                        currentPage={currentPage} 
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        onClearSearch={handleClearSearch}
+                    />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-ciec-bg p-4 md:p-6 lg:p-8">
                         <Routes>
                             <Route path="/" element={<Navigate to="/mapa" />} />
                             <Route path="/mapa" element={<Mapa />} />
-                            <Route path="/empresas" element={<Empresas />} />
+                            <Route path="/empresas" element={<Empresas searchTerm={searchTerm} />} />
                             <Route path="/empresas/editar/:id" element={<EmpresaForm />} />
-                            <Route path="/gremios" element={<Gremios />} />
+                            <Route path="/gremios" element={<Gremios searchTerm={searchTerm}/>} />
                             <Route path="/gremios/nuevo" element={<GremioForm />} />
                             <Route path="/gremios/editar/:rif" element={<GremioForm />} />
-                            <Route path="/integrantes" element={<Integrantes />} />
+                            <Route path="/integrantes" element={<Integrantes searchTerm={searchTerm} />} />
                             <Route path="/integrantes/nuevo" element={<IntegranteForm />} />
                             {/* Ruta añadida para la edición de integrantes */}
                             <Route path="/integrantes/editar/:id" element={<IntegranteForm />} />

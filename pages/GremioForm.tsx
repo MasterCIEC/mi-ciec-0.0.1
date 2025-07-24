@@ -6,6 +6,7 @@ import Spinner from '../components/ui/Spinner';
 import { Save, X, UploadCloud, Edit, Building, MapPin, Calendar, CheckSquare } from 'lucide-react';
 import { GoogleMap, MarkerF } from '@react-google-maps/api';
 import { darkMapStyle } from '../styles/mapStyles';
+import RifInput from '../components/ui/RifInput';
 
 // --- Helper Components ---
 const DetailField = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: any }) => (
@@ -303,7 +304,7 @@ const GremioForm: React.FC = () => {
                             <DetailField icon={<Building size={14}/>} label="Nombre" value={formData.nombre} />
                             <DetailField icon={<Calendar size={14}/>} label="Año de Fundación" value={formData.ano_fundacion} />
                         </> : <>
-                            <FormInput label="RIF*" name="rif" value={formData.rif || ''} onChange={handleChange} required readOnly={!isCreating} />
+                            <RifInput label="RIF*" value={formData.rif} onChange={(newValue) => setFormData(prev => ({ ...prev, rif: newValue }))} required readOnly={!isCreating} />
                             <FormInput label="Nombre*" name="nombre" value={formData.nombre || ''} onChange={handleChange} required />
                             <FormInput label="Año de Fundación" name="ano_fundacion" value={formData.ano_fundacion || ''} onChange={handleChange} type="date" />
                         </>}

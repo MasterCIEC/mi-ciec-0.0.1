@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Minus, UploadCloud, X, CheckCircle, AlertCircle, Search } from 'lucide-react';
 import { GoogleMap, MarkerF } from '@react-google-maps/api';
@@ -6,6 +7,8 @@ import { darkMapStyle } from '../../styles/mapStyles';
 import Spinner from '../ui/Spinner';
 import { supabase } from '../../lib/supabase';
 import { EstablecimientoFormData, Producto, ProcesoProductivo } from '../../types';
+import RifInput from '../ui/RifInput';
+import PhoneInput from '../ui/PhoneInput';
 
 // Debounce hook
 const useDebounce = (value: string, delay: number) => {
@@ -258,8 +261,8 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
         updateFormData(updates);
     };
 
-    const handleVerifyRif = async (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const rif = e.currentTarget.value;
+    const handleVerifyRif = async () => {
+        const rif = formData.rif;
         if (!rif || isEditing) return;
         
         setCompanyCheckStatus('loading');
@@ -381,7 +384,7 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
         <div className="space-y-8">
             <Fieldset legend="Datos de Identificación de la Compañía">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <InputField label="RIF" name="rif" value={formData.rif} onChange={handleChange} required readOnly />
+                    <RifInput label="RIF" value={formData.rif} onChange={(newValue) => updateFormData({ rif: newValue })} required readOnly />
                     <InputField label="Razón Social" name="razon_social" value={formData.razon_social} onChange={handleChange} required />
                     <InputField label="Año de Fundación" name="ano_fundacion" type="date" value={formData.ano_fundacion} onChange={handleChange} />
                     <InputField label="Dirección Fiscal" name="direccion_fiscal" value={formData.direccion_fiscal} onChange={handleChange} as="textarea" />
@@ -402,8 +405,8 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InputField label="Nombre Establecimiento" name="nombre_establecimiento" value={establishmentName} onChange={handleChange} required />
                     <InputField label="E-mail Principal" name="email_principal" type="email" value={formData.email_principal} onChange={handleChange} />
-                    <InputField label="Teléfono Principal 1" name="telefono_principal_1" type="tel" value={formData.telefono_principal_1} onChange={handleChange} />
-                    <InputField label="Teléfono Principal 2" name="telefono_principal_2" type="tel" value={formData.telefono_principal_2} onChange={handleChange} />
+                    <PhoneInput label="Teléfono Principal 1" value={formData.telefono_principal_1} onChange={(newValue) => updateFormData({ telefono_principal_1: newValue })} />
+                    <PhoneInput label="Teléfono Principal 2" value={formData.telefono_principal_2} onChange={(newValue) => updateFormData({ telefono_principal_2: newValue })} />
                     <InputField label="Fecha de Apertura" name="fecha_apertura" type="date" value={formData.fecha_apertura} onChange={handleChange} />
                 </div>
             </Fieldset>
@@ -434,9 +437,9 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
             </Fieldset>
             <Fieldset legend="Clasificación y Producción">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                    <SelectField label="Sección CAEV" name="id_seccion" value={formData.id_seccion} onChange={handleChange} options={dropdowns.secCaev.map(s => ({id: s.id_seccion, name: s.nombre_seccion}))} />
-                    <SelectField label="División CAEV" name="id_division" value={formData.id_division} onChange={handleChange} options={filteredDivCaev.map(d => ({id: d.id_division, name: d.nombre_division}))} disabled={!formData.id_seccion} />
-                    <SelectField label="Clase CAEV" name="id_clase_caev" value={formData.id_clase_caev} onChange={handleChange} options={filteredClassCaev.map(c => ({id: c.id_clase, name: c.nombre_clase}))} disabled={!formData.id_division} />
+                    <SelectField label="Sección CAEV" name="id_seccion" value={formData.id_seccion} onChange={handleChange} options={dropdowns.secCaev.map(s => ({id: s.id_seccion, name: `${s.nombre_seccion}${s.descripcion_seccion ? ` - ${s.descripcion_seccion}` : ''}`}))} />
+                    <SelectField label="División CAEV" name="id_division" value={formData.id_division} onChange={handleChange} options={filteredDivCaev.map(d => ({id: d.id_division, name: `${d.nombre_division}${d.descripcion_division ? ` - ${d.descripcion_division}` : ''}`}))} disabled={!formData.id_seccion} />
+                    <SelectField label="Clase CAEV" name="id_clase_caev" value={formData.id_clase_caev} onChange={handleChange} options={filteredClassCaev.map(c => ({id: c.id_clase, name: `${c.nombre_clase}${c.descripcion_clase ? ` - ${c.descripcion_clase}` : ''}`}))} disabled={!formData.id_division} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <CreatableSelector 
@@ -521,7 +524,7 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
                             {companyCheckStatus === 'found' && <p className="text-green-400 bg-green-900/50 p-3 rounded-md mb-4">Compañía ya registrada. Proceda a registrar un nuevo establecimiento para esta compañía.</p>}
                             {companyCheckStatus === 'not_found' && <p className="text-yellow-400 bg-yellow-900/50 p-3 rounded-md mb-4">Nueva compañía detectada. Por favor, complete los datos fiscales.</p>}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <InputField label="RIF" name="rif" value={formData.rif} onChange={handleChange} onBlur={handleVerifyRif} required pattern="^[JVEGPCjvegpc]-\d{8,9}-\d$" title="Formato: J-12345678-9" readOnly={isEditing || isCompanyLocked} />
+                                <RifInput label="RIF" value={formData.rif} onChange={(newValue) => updateFormData({ rif: newValue })} onBlur={handleVerifyRif} required readOnly={isEditing || isCompanyLocked} />
                                 <InputField label="Razón Social" name="razon_social" value={formData.razon_social} onChange={handleChange} required readOnly={isCompanyLocked} />
                                 <InputField label="Año de Fundación" name="ano_fundacion" type="date" value={formData.ano_fundacion} onChange={handleChange} readOnly={isCompanyLocked}/>
                                 <InputField label="Dirección Fiscal" name="direccion_fiscal" value={formData.direccion_fiscal} onChange={handleChange} as="textarea" readOnly={isCompanyLocked} />
@@ -551,8 +554,8 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
                                     {nameValidation === 'valid' && <CheckCircle className="text-green-500 inline-block ml-2"/>}
                                 </div>
                                 <InputField label="E-mail Principal" name="email_principal" type="email" value={formData.email_principal} onChange={handleChange} />
-                                <InputField label="Teléfono Principal 1" name="telefono_principal_1" type="tel" value={formData.telefono_principal_1} onChange={handleChange} />
-                                <InputField label="Teléfono Principal 2" name="telefono_principal_2" type="tel" value={formData.telefono_principal_2} onChange={handleChange} />
+                                <PhoneInput label="Teléfono Principal 1" value={formData.telefono_principal_1} onChange={(newValue) => updateFormData({ telefono_principal_1: newValue })} />
+                                <PhoneInput label="Teléfono Principal 2" value={formData.telefono_principal_2} onChange={(newValue) => updateFormData({ telefono_principal_2: newValue })} />
                                 <InputField label="Fecha de Apertura" name="fecha_apertura" type="date" value={formData.fecha_apertura} onChange={handleChange} />
                             </div>
                         </Fieldset>
@@ -591,9 +594,9 @@ const EmpresaFormFields: React.FC<EmpresaFormFieldsProps> = ({
                     <div className={step === 4 ? 'block' : 'hidden'}>
                         <Fieldset legend="Clasificación CAEV">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <SelectField label="Sección CAEV" name="id_seccion" value={formData.id_seccion} onChange={handleChange} options={dropdowns.secCaev.map(s => ({id: s.id_seccion, name: s.nombre_seccion}))} />
-                                <SelectField label="División CAEV" name="id_division" value={formData.id_division} onChange={handleChange} options={filteredDivCaev.map(d => ({id: d.id_division, name: d.nombre_division}))} disabled={!formData.id_seccion} />
-                                <SelectField label="Clase CAEV" name="id_clase_caev" value={formData.id_clase_caev} onChange={handleChange} options={filteredClassCaev.map(c => ({id: c.id_clase, name: c.nombre_clase}))} disabled={!formData.id_division} />
+                                <SelectField label="Sección CAEV" name="id_seccion" value={formData.id_seccion} onChange={handleChange} options={dropdowns.secCaev.map(s => ({id: s.id_seccion, name: `${s.nombre_seccion}${s.descripcion_seccion ? ` - ${s.descripcion_seccion}` : ''}`}))} />
+                                <SelectField label="División CAEV" name="id_division" value={formData.id_division} onChange={handleChange} options={filteredDivCaev.map(d => ({id: d.id_division, name: `${d.nombre_division}${d.descripcion_division ? ` - ${d.descripcion_division}` : ''}`}))} disabled={!formData.id_seccion} />
+                                <SelectField label="Clase CAEV" name="id_clase_caev" value={formData.id_clase_caev} onChange={handleChange} options={filteredClassCaev.map(c => ({id: c.id_clase, name: `${c.nombre_clase}${c.descripcion_clase ? ` - ${c.descripcion_clase}` : ''}`}))} disabled={!formData.id_division} />
                             </div>
                         </Fieldset>
                         <Fieldset legend="Productos y Procesos">

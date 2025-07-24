@@ -73,7 +73,11 @@ const IntegranteCard: React.FC<{ integrante: IntegranteDetail, onDelete: (id: nu
 };
 
 
-const Integrantes: React.FC = () => {
+interface IntegrantesProps {
+    searchTerm: string;
+}
+
+const Integrantes: React.FC<IntegrantesProps> = ({ searchTerm }) => {
     const [integrantes, setIntegrantes] = useState<IntegranteDetail[]>([]);
     const [establishmentsForFilter, setEstablishmentsForFilter] = useState<EstablishmentForFilter[]>([]);
     const [loading, setLoading] = useState(true);
@@ -129,11 +133,26 @@ const Integrantes: React.FC = () => {
     }, []);
 
     const filteredIntegrantes = useMemo(() => {
-        if (selectedEstablishmentId === 'all') {
-            return integrantes;
+        // 1. Filter by Establishment
+        let results = integrantes;
+        if (selectedEstablishmentId !== 'all') {
+            results = integrantes.filter(i => i.id_establecimiento === selectedEstablishmentId);
         }
-        return integrantes.filter(i => i.id_establecimiento === selectedEstablishmentId);
-    }, [integrantes, selectedEstablishmentId]);
+        
+        // 2. Filter by Search Term
+        if (searchTerm) {
+            const lowercasedFilter = searchTerm.toLowerCase();
+            results = results.filter(i => 
+                i.nombre_persona.toLowerCase().includes(lowercasedFilter) ||
+                (i.cargo && i.cargo.toLowerCase().includes(lowercasedFilter)) ||
+                (i.email && i.email.toLowerCase().includes(lowercasedFilter)) ||
+                (i.telefono && i.telefono.replace(/[^0-9]/g, '').includes(lowercasedFilter.replace(/[^0-9]/g, ''))) ||
+                (i.establecimientos?.nombre_establecimiento && i.establecimientos.nombre_establecimiento.toLowerCase().includes(lowercasedFilter))
+            );
+        }
+
+        return results;
+    }, [integrantes, selectedEstablishmentId, searchTerm]);
     
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Está seguro de que desea eliminar este integrante?')) {

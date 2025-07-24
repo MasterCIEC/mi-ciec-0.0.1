@@ -48,9 +48,14 @@ const EmpresaDetailView: React.FC<EmpresaDetailViewProps> = ({ data, logoPreview
     const municipio = dropdowns.municipios.find(m => m.id_municipio === data.id_municipio)?.nombre_municipio;
     const parroquia = dropdowns.parroquias.find(p => p.id_parroquia === data.id_parroquia)?.nombre_parroquia;
     
-    const seccionCaev = dropdowns.secCaev.find(s => s.id_seccion === data.id_seccion)?.nombre_seccion;
-    const divisionCaev = dropdowns.divCaev.find(d => d.id_division === data.id_division)?.nombre_division;
-    const claseCaev = dropdowns.classCaev.find(c => c.id_clase === data.id_clase_caev)?.nombre_clase;
+    const seccion = dropdowns.secCaev.find(s => s.id_seccion === data.id_seccion);
+    const seccionCaev = seccion ? `${seccion.nombre_seccion}${seccion.descripcion_seccion ? ` - ${seccion.descripcion_seccion}` : ''}` : undefined;
+
+    const division = dropdowns.divCaev.find(d => d.id_division === data.id_division);
+    const divisionCaev = division ? `${division.nombre_division}${division.descripcion_division ? ` - ${division.descripcion_division}` : ''}` : undefined;
+
+    const clase = dropdowns.classCaev.find(c => c.id_clase === data.id_clase_caev);
+    const claseCaev = clase ? `${clase.nombre_clase}${clase.descripcion_clase ? ` - ${clase.descripcion_clase}` : ''}` : undefined;
     
     const totalPersonal = (data.personal_obrero || 0) + (data.personal_empleado || 0) + (data.personal_directivo || 0);
 
