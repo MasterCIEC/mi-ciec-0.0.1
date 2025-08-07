@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { supabase } from '../lib/supabase';
@@ -71,14 +69,14 @@ const Reportes: React.FC = () => {
                 supabase.from('clases_caev').select('*')
             ]);
             
-            setAllData(estData || []);
-            setEstados(estadosData || []);
-            setMunicipios(municipiosData || []);
-            setParroquias(parroquiasData || []);
-            setInstituciones(instData || []);
-            setSecciones(secData || []);
-            setDivisiones(divData || []);
-            setClases(claData || []);
+            setAllData((estData as any) || []);
+            setEstados((estadosData as any) || []);
+            setMunicipios((municipiosData as any) || []);
+            setParroquias((parroquiasData as any) || []);
+            setInstituciones((instData as any) || []);
+            setSecciones((secData as any) || []);
+            setDivisiones((divData as any) || []);
+            setClases((claData as any) || []);
             setLoading(false);
         };
         fetchData();
@@ -109,9 +107,9 @@ const Reportes: React.FC = () => {
             const dir = e.direcciones;
             const caev = e.clases_caev;
             
-            if (selectedEstado !== '0' && dir?.parroquias?.municipios?.id_estado.toString() !== selectedEstado) return false;
-            if (selectedMunicipio !== '0' && dir?.parroquias?.id_municipio.toString() !== selectedMunicipio) return false;
-            if (selectedParroquia !== '0' && dir?.id_parroquia.toString() !== selectedParroquia) return false;
+            if (selectedEstado !== '0' && String(dir?.parroquias?.municipios?.estados?.id_estado) !== selectedEstado) return false;
+            if (selectedMunicipio !== '0' && String(dir?.parroquias?.municipios?.id_municipio) !== selectedMunicipio) return false;
+            if (selectedParroquia !== '0' && String(dir?.id_parroquia) !== selectedParroquia) return false;
             if (hasCoords !== null && (!!dir?.latitud !== hasCoords)) return false;
 
             if (selectedInstituciones.length > 0) {
@@ -119,9 +117,9 @@ const Reportes: React.FC = () => {
                 if (!selectedInstituciones.some(rif => establishmentRifs.includes(rif))) return false;
             }
 
-            if (selectedSeccion !== '0' && caev?.divisiones_caev?.id_seccion.toString() !== selectedSeccion) return false;
-            if (selectedDivision !== '0' && caev?.id_division.toString() !== selectedDivision) return false;
-            if (selectedClase !== '0' && caev?.id_clase.toString() !== selectedClase) return false;
+            if (selectedSeccion !== '0' && String(caev?.divisiones_caev?.secciones_caev?.id_seccion) !== selectedSeccion) return false;
+            if (selectedDivision !== '0' && String(caev?.divisiones_caev?.id_division) !== selectedDivision) return false;
+            if (selectedClase !== '0' && String(caev?.id_clase) !== selectedClase) return false;
             
             // Filtros por datos faltantes
             if (filterMissingLocation && dir?.parroquias?.id_parroquia) return false;
@@ -206,7 +204,7 @@ const Reportes: React.FC = () => {
     if (loading) return <div className="flex items-center justify-center h-full"><Spinner size="lg" /></div>;
 
     return (
-        <div className="flex h-full gap-6">
+        <div className="flex flex-col lg:flex-row h-full gap-6">
             <ColumnSelectionModal 
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -214,7 +212,7 @@ const Reportes: React.FC = () => {
             />
 
             {/* Filters Panel */}
-            <div className="w-1/3 max-w-sm bg-ciec-card p-4 rounded-lg flex flex-col">
+            <div className="w-full lg:w-1/3 lg:max-w-sm bg-ciec-card p-4 rounded-lg flex flex-col flex-shrink-0">
                 <h2 className="text-xl font-semibold mb-4">Filtros de Reporte</h2>
                 <div className="flex-1 space-y-4 overflow-y-auto pr-2">
                     {/* Filtro Geográfico */}
@@ -329,33 +327,38 @@ const Reportes: React.FC = () => {
 
             {/* Results Panel */}
             <div className="flex-1 bg-ciec-card p-4 rounded-lg flex flex-col">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                     <h2 className="text-xl font-semibold">Resultado <span className="text-base font-normal text-ciec-text-secondary">{filteredData.length}</span></h2>
-                    <button onClick={() => setIsModalOpen(true)} className="flex items-center bg-ciec-blue hover:bg-ciec-blue-hover text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                    <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center w-full sm:w-auto bg-transparent hover:bg-ciec-blue text-ciec-blue hover:text-white border border-ciec-blue font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-ciec-blue">
                         <Download className="w-5 h-5 mr-2" /> Exportar a Excel
                     </button>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                     <table className="w-full text-sm text-left text-ciec-text-secondary">
-                        <thead className="text-xs text-ciec-text-primary uppercase bg-ciec-bg sticky top-0">
-                            <tr>
-                                <th scope="col" className="px-6 py-3">Nombre Establecimiento</th>
-                                <th scope="col" className="px-6 py-3">Razón Social</th>
-                                <th scope="col" className="px-6 py-3">RIF</th>
-                                <th scope="col" className="px-6 py-3">Municipio</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredData.slice(0, 100).map(e => ( // Preview first 100 rows
-                                <tr key={e.id_establecimiento} className="border-b border-ciec-border hover:bg-ciec-bg">
-                                    <td className="px-6 py-4 font-medium text-ciec-text-primary whitespace-nowrap">{e.nombre_establecimiento || 'N/A'}</td>
-                                    <td className="px-6 py-4">{e.companias?.razon_social}</td>
-                                    <td className="px-6 py-4">{e.companias?.rif}</td>
-                                    <td className="px-6 py-4">{e.direcciones?.parroquias?.municipios?.nombre_municipio || 'N/A'}</td>
+                     <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-ciec-text-secondary min-w-[640px]">
+                            <thead className="text-xs text-ciec-text-primary uppercase bg-ciec-bg sticky top-0">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">Nombre Establecimiento</th>
+                                    <th scope="col" className="px-6 py-3">Razón Social</th>
+                                    <th scope="col" className="px-6 py-3">RIF</th>
+                                    <th scope="col" className="px-6 py-3">Municipio</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredData.slice(0, 100).map(e => ( // Preview first 100 rows
+                                    <tr key={e.id_establecimiento} className="border-b border-ciec-border hover:bg-ciec-bg">
+                                        <td className="px-6 py-4 font-medium text-ciec-text-primary whitespace-nowrap">{e.nombre_establecimiento || 'N/A'}</td>
+                                        <td className="px-6 py-4">{e.companias?.razon_social}</td>
+                                        <td className="px-6 py-4">{e.companias?.rif}</td>
+                                        <td className="px-6 py-4">{e.direcciones?.parroquias?.municipios?.nombre_municipio || 'N/A'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                     </div>
+                     {filteredData.length === 0 && (
+                        <div className="text-center py-10 text-ciec-text-secondary">No hay resultados para los filtros seleccionados.</div>
+                     )}
                      {filteredData.length > 100 && (
                         <div className="text-center py-4 text-ciec-text-secondary">Mostrando 100 de {filteredData.length} resultados. Utilice los filtros para refinar la búsqueda o exporte para ver todos los datos.</div>
                     )}

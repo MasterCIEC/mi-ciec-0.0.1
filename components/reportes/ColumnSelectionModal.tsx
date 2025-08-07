@@ -108,10 +108,10 @@ const ColumnSelectionModal: React.FC<Partial<ColumnSelectionModalProps>> = ({
                      <button onClick={handleDeselectAll} className="text-sm text-ciec-blue hover:underline">Deseleccionar Todo</button>
                 </div>
                 <div className="space-x-4">
-                    <button onClick={onClose} className="bg-ciec-border text-ciec-text-primary font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors">
+                    <button onClick={onClose} className="border border-ciec-border bg-transparent text-ciec-text-secondary hover:bg-ciec-border hover:text-ciec-text-primary font-bold py-2 px-6 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-ciec-border">
                         Cancelar
                     </button>
-                    <button onClick={() => onGenerate(selected)} className="bg-ciec-blue hover:bg-ciec-blue-hover text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                    <button onClick={() => onGenerate(selected)} className="bg-transparent hover:bg-ciec-blue text-ciec-blue hover:text-white border border-ciec-blue font-bold py-2 px-6 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-ciec-blue">
                         Generar Reporte
                     </button>
                 </div>

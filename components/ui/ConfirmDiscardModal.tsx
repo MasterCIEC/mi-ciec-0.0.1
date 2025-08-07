@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Modal from './Modal';
 import { useDraft } from '../../contexts/DraftContext';
@@ -18,16 +17,15 @@ const ConfirmDiscardModal: React.FC = () => {
             <div className="mt-6 flex justify-end space-x-4">
                 <button
                     onClick={handleCancelDiscard}
-                    className="bg-ciec-border text-ciec-text-primary font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="border border-ciec-border bg-transparent text-ciec-text-secondary hover:bg-ciec-border hover:text-ciec-text-primary font-bold py-2 px-6 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-ciec-border"
                 >
                     Seguir Editando
                 </button>
                 <button
                     onClick={() => {
                         handleConfirmDiscard();
-                        // The context now handles closing the modal state internally
                     }}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                    className="border border-red-500 bg-transparent text-red-500 hover:bg-red-500 hover:text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-red-500"
                 >
                     Descartar
                 </button>

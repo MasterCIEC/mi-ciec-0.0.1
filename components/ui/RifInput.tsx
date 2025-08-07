@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 const RIF_PREFIXES = ['V', 'E', 'J', 'P', 'G', 'C'];
@@ -9,27 +10,30 @@ interface RifInputProps {
     onBlur?: () => void;
     readOnly?: boolean;
     required?: boolean;
+    selectTabIndex?: number;
+    numberTabIndex?: number;
 }
 
-const RifInput: React.FC<RifInputProps> = ({ label, value, onChange, onBlur, readOnly, required }) => {
-    const [prefix, setPrefix] = useState('');
+const RifInput: React.FC<RifInputProps> = ({ label, value, onChange, onBlur, readOnly, required, selectTabIndex, numberTabIndex }) => {
+    const [prefix, setPrefix] = useState('J');
     const [number, setNumber] = useState('');
 
     useEffect(() => {
+        // This effect synchronizes the internal state with the parent's value prop.
         if (value) {
-            const parts = value.split('-');
-            if (parts.length > 0) {
-                const p = parts[0].toUpperCase();
-                if (RIF_PREFIXES.includes(p)) {
-                    setPrefix(p);
-                    setNumber(parts.length > 1 ? parts.slice(1).join('').replace(/[^0-9]/g, '') : '');
-                } else {
-                    const numOnly = value.replace(/[^0-9]/g, '');
-                    setNumber(numOnly);
-                }
+            const cleanedValue = value.replace(/-/g, '');
+            const p = cleanedValue.charAt(0).toUpperCase();
+            if (RIF_PREFIXES.includes(p)) {
+                setPrefix(p);
+                setNumber(cleanedValue.substring(1));
+            } else {
+                // If value from parent has no valid prefix, default to J but keep the number
+                setPrefix('J');
+                setNumber(cleanedValue);
             }
         } else {
-            setPrefix('');
+            // If the parent value is empty, reset to visual default.
+            setPrefix('J');
             setNumber('');
         }
     }, [value]);
@@ -37,31 +41,32 @@ const RifInput: React.FC<RifInputProps> = ({ label, value, onChange, onBlur, rea
     const handlePrefixChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newPrefix = e.target.value;
         setPrefix(newPrefix);
-        onChange(`${newPrefix}-${number}`);
+        // Always notify parent on change
+        onChange(`${newPrefix}${number}`);
     };
 
     const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newNumber = e.target.value.replace(/[^0-9]/g, '').slice(0, 9);
         setNumber(newNumber);
-        onChange(`${prefix}-${newNumber}`);
+        onChange(`${prefix}${newNumber}`);
     };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
         e.preventDefault();
         const pastedText = e.clipboardData.getData('text').toUpperCase();
-        
-        const foundPrefix = RIF_PREFIXES.find(p => pastedText.startsWith(p));
+        const cleanedPastedText = pastedText.replace(/[^A-Z0-9]/g, '');
 
+        const foundPrefix = RIF_PREFIXES.find(p => cleanedPastedText.startsWith(p));
         if (foundPrefix) {
-            const rest = pastedText.substring(foundPrefix.length);
-            const newNumber = rest.replace(/[^0-9]/g, '').slice(0, 9);
+            const newNumber = cleanedPastedText.substring(foundPrefix.length).slice(0, 9);
             setPrefix(foundPrefix);
             setNumber(newNumber);
-            onChange(`${foundPrefix}-${newNumber}`);
+            onChange(`${foundPrefix}${newNumber}`);
         } else {
-            const newNumber = pastedText.replace(/[^0-9]/g, '').slice(0, 9);
+            const newNumber = cleanedPastedText.replace(/[^0-9]/g, '').slice(0, 9);
+            // Keep current prefix if pasted text doesn't have one
             setNumber(newNumber);
-            onChange(`${prefix}-${newNumber}`);
+            onChange(`${prefix}${newNumber}`);
         }
     };
 
@@ -73,9 +78,9 @@ const RifInput: React.FC<RifInputProps> = ({ label, value, onChange, onBlur, rea
                     value={prefix}
                     onChange={handlePrefixChange}
                     disabled={readOnly}
+                    tabIndex={selectTabIndex}
                     className="bg-ciec-bg border border-ciec-border rounded-l-lg px-3 py-2 text-ciec-text-primary focus:ring-2 focus:ring-ciec-blue focus:outline-none disabled:opacity-70 z-10"
                 >
-                    <option value="">-</option>
                     {RIF_PREFIXES.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
                 <input
@@ -87,6 +92,8 @@ const RifInput: React.FC<RifInputProps> = ({ label, value, onChange, onBlur, rea
                     maxLength={9}
                     placeholder="123456789"
                     disabled={readOnly}
+                    required={required}
+                    tabIndex={numberTabIndex}
                     className="w-full bg-ciec-bg border-t border-b border-r border-ciec-border rounded-r-lg px-3 py-2 text-ciec-text-primary focus:ring-2 focus:ring-ciec-blue focus:outline-none disabled:opacity-70 -ml-px"
                 />
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Integrante, Establecimiento, Compania } from '../types';
@@ -45,16 +45,16 @@ const IntegranteCard: React.FC<{ integrante: IntegranteDetail, onDelete: (id: nu
     return (
         <div className="bg-ciec-bg p-4 rounded-lg border border-ciec-border space-y-4">
             <div className="flex justify-between items-start">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 min-w-0">
                     <div className="flex-shrink-0 w-12 h-12 bg-ciec-border rounded-lg flex items-center justify-center">
                         <User className="w-6 h-6 text-ciec-text-secondary" />
                     </div>
-                    <div>
-                        <h3 className="font-semibold text-lg text-ciec-text-primary">{integrante.nombre_persona}</h3>
-                        <p className="text-sm text-ciec-text-secondary">{integrante.establecimientos?.nombre_establecimiento || 'Sin establecimiento'}</p>
+                    <div className="min-w-0">
+                        <h3 className="font-semibold text-lg text-ciec-text-primary truncate">{integrante.nombre_persona}</h3>
+                        <p className="text-sm text-ciec-text-secondary truncate">{integrante.establecimientos?.nombre_establecimiento || 'Sin establecimiento'}</p>
                     </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-0 sm:space-x-2 flex-shrink-0">
                      <button onClick={handleEdit} className="p-2 text-ciec-text-secondary hover:text-ciec-blue rounded-full transition-colors" title="Editar">
                         <Edit className="w-5 h-5" />
                     </button>
@@ -63,7 +63,7 @@ const IntegranteCard: React.FC<{ integrante: IntegranteDetail, onDelete: (id: nu
                     </button>
                 </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-ciec-border">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-ciec-border">
                 <DetailField icon={<Briefcase size={14}/>} label="Cargo" value={integrante.cargo} />
                 <DetailField icon={<Mail size={14}/>} label="E-mail" value={integrante.email} />
                 <DetailField icon={<Phone size={14}/>} label="Teléfono" value={integrante.telefono} />
@@ -81,9 +81,9 @@ const Integrantes: React.FC<IntegrantesProps> = ({ searchTerm }) => {
     const [integrantes, setIntegrantes] = useState<IntegranteDetail[]>([]);
     const [establishmentsForFilter, setEstablishmentsForFilter] = useState<EstablishmentForFilter[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedEstablishmentId, setSelectedEstablishmentId] = useState<number | 'all'>('all');
+    const [selectedEstablishmentId, setSelectedEstablishmentId] = useState<string | 'all'>('all');
     
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         const { data: integrantesData, error: integrantesError } = await supabase
             .from('integrantes')
@@ -95,12 +95,12 @@ const Integrantes: React.FC<IntegrantesProps> = ({ searchTerm }) => {
             setIntegrantes([]);
             setEstablishmentsForFilter([]);
         } else {
-            const allIntegrantes = (integrantesData as any || []) as IntegranteDetail[];
+            const allIntegrantes = ((integrantesData as any) || []) as IntegranteDetail[];
             setIntegrantes(allIntegrantes);
 
             // Procesar datos para obtener establecimientos con contadores
-            const counts = new Map<number, number>();
-            const establishmentMap = new Map<number, EstablishmentForFilter>();
+            const counts = new Map<string, number>();
+            const establishmentMap = new Map<string, EstablishmentForFilter>();
 
             allIntegrantes.forEach(integrante => {
                 if (integrante.id_establecimiento && integrante.establecimientos) {
@@ -126,11 +126,11 @@ const Integrantes: React.FC<IntegrantesProps> = ({ searchTerm }) => {
             setEstablishmentsForFilter(establishmentsWithCounts);
         }
         setLoading(false);
-    };
+    }, []);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const filteredIntegrantes = useMemo(() => {
         // 1. Filter by Establishment
@@ -169,9 +169,9 @@ const Integrantes: React.FC<IntegrantesProps> = ({ searchTerm }) => {
     if (loading) return <div className="flex items-center justify-center h-full"><Spinner size="lg" /></div>;
 
     return (
-        <div className="flex h-full gap-6">
+        <div className="flex flex-col md:flex-row h-full gap-6">
             {/* Columna de Filtros */}
-            <div className="w-1/3 max-w-xs bg-ciec-card p-4 rounded-lg flex flex-col">
+            <div className="w-full md:w-1/3 md:max-w-xs bg-ciec-card p-4 rounded-lg flex flex-col flex-shrink-0">
                 <h2 className="text-lg font-semibold mb-4">Establecimientos</h2>
                 <div className="flex-1 overflow-y-auto pr-2">
                     <ul>
@@ -200,9 +200,9 @@ const Integrantes: React.FC<IntegrantesProps> = ({ searchTerm }) => {
 
             {/* Columna de Integrantes */}
             <div className="flex-1 bg-ciec-card p-4 rounded-lg flex flex-col">
-                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
+                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 flex-shrink-0">
                     <h2 className="text-xl font-semibold">Integrantes <span className="text-base font-normal text-ciec-text-secondary">{filteredIntegrantes.length}</span></h2>
-                    <Link to="/integrantes/nuevo" className="flex items-center bg-ciec-blue hover:bg-ciec-blue-hover text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                    <Link to="/integrantes/nuevo" className="flex items-center justify-center bg-transparent hover:bg-ciec-blue text-ciec-blue hover:text-white border border-ciec-blue font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-ciec-blue">
                         <Plus className="w-5 h-5 mr-2" /> Añadir
                     </Link>
                 </div>

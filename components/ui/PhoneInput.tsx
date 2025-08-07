@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 const PHONE_PREFIXES = ['0412', '0414', '0424', '0416', '0426', '0212', '0241', '0242', '0245', '0249'];
@@ -8,9 +9,11 @@ interface PhoneInputProps {
     onChange: (value: string) => void;
     readOnly?: boolean;
     required?: boolean;
+    selectTabIndex?: number;
+    numberTabIndex?: number;
 }
 
-const PhoneInput: React.FC<PhoneInputProps> = ({ label, value, onChange, readOnly, required }) => {
+const PhoneInput: React.FC<PhoneInputProps> = ({ label, value, onChange, readOnly, required, selectTabIndex, numberTabIndex }) => {
     const [prefix, setPrefix] = useState('');
     const [number, setNumber] = useState('');
 
@@ -85,6 +88,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({ label, value, onChange, readOnl
                     value={prefix}
                     onChange={handlePrefixChange}
                     disabled={readOnly}
+                    tabIndex={selectTabIndex}
                     className="bg-ciec-bg border border-ciec-border rounded-l-lg px-3 py-2 text-ciec-text-primary focus:ring-2 focus:ring-ciec-blue focus:outline-none disabled:opacity-70 z-10"
                 >
                     <option value="">- Código -</option>
@@ -98,6 +102,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({ label, value, onChange, readOnl
                     maxLength={7}
                     placeholder="1234567"
                     disabled={readOnly}
+                    tabIndex={numberTabIndex}
                     className="w-full bg-ciec-bg border-t border-b border-r border-ciec-border rounded-r-lg px-3 py-2 text-ciec-text-primary focus:ring-2 focus:ring-ciec-blue focus:outline-none disabled:opacity-70 -ml-px"
                 />
             </div>

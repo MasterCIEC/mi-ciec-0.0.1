@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Institucion } from '../types';
@@ -13,25 +13,27 @@ const Gremios: React.FC<GremiosProps> = ({ searchTerm }) => {
     const [instituciones, setInstituciones] = useState<Institucion[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchGremios = async () => {
+    const fetchGremios = useCallback(async () => {
         setLoading(true);
+
         const { data, error } = await supabase
             .from('instituciones')
-            .select('*')
+            .select('rif, nombre, abreviacion, logo_gremio, id_direccion, ano_fundacion')
             .order('nombre', { ascending: true });
 
         if (error) {
-            console.error('Error fetching institutions:', error);
+            console.error('Error fetching gremios data:', error);
             alert('Error al cargar los gremios.');
+            setInstituciones([]);
         } else {
-            setInstituciones(data || []);
+            setInstituciones((data as any) || []);
         }
         setLoading(false);
-    };
+    }, []);
 
     useEffect(() => {
         fetchGremios();
-    }, []);
+    }, [fetchGremios]);
 
     const filteredInstituciones = useMemo(() => {
         if (!searchTerm) {
@@ -65,9 +67,12 @@ const Gremios: React.FC<GremiosProps> = ({ searchTerm }) => {
 
     return (
         <div className="bg-ciec-card p-6 rounded-lg">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h1 className="text-2xl font-bold">Gremios / Instituciones</h1>
-                <Link to="/gremios/nuevo" className="flex items-center bg-ciec-blue hover:bg-ciec-blue-hover text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                <Link
+                    to="/gremios/nuevo"
+                    className="flex items-center justify-center bg-transparent hover:bg-ciec-blue text-ciec-blue hover:text-white border border-ciec-blue font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-card focus:ring-ciec-blue"
+                >
                     <Plus className="w-5 h-5 mr-2" /> Añadir
                 </Link>
             </div>
@@ -78,16 +83,16 @@ const Gremios: React.FC<GremiosProps> = ({ searchTerm }) => {
                         to={`/gremios/editar/${gremio.rif}`}
                         className="flex items-center justify-between bg-ciec-bg p-4 rounded-lg hover:ring-2 hover:ring-ciec-blue transition-all duration-200 cursor-pointer"
                     >
-                        <div className="flex items-center space-x-4 flex-grow">
+                        <div className="flex items-center space-x-4 flex-grow min-w-0">
                             <div className="flex-shrink-0 w-12 h-12 bg-ciec-border rounded-lg flex items-center justify-center">
-                                {gremio.logo ? (
-                                    <img src={gremio.logo} alt="logo" className="w-full h-full object-cover rounded-lg" />
+                                {gremio.logo_gremio ? (
+                                    <img src={gremio.logo_gremio} alt="logo" className="w-full h-full object-cover rounded-lg" />
                                 ) : (
                                     <Building className="w-6 h-6 text-ciec-text-secondary" />
                                 )}
                             </div>
-                            <div>
-                                <span className="font-medium text-ciec-text-primary">{gremio.nombre}</span>
+                            <div className="flex-grow min-w-0">
+                                <span className="font-medium text-ciec-text-primary truncate block">{gremio.nombre}</span>
                                 <p className="text-sm text-ciec-text-secondary">{gremio.rif}</p>
                             </div>
                         </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { EstablecimientoFormData, Estado, Municipio, Parroquia, SeccionCaev, DivisionCaev, ClaseCaev, Institucion } from '../../types';
@@ -51,9 +50,9 @@ const EmpresaFormDrawer: React.FC = () => {
            if (e1 || e2 || e3 || e4 || e5 || e6 || e7) {
                setError("Failed to load form metadata.");
            } else {
-               setEstados(e || []); setMunicipios(m || []); setParroquias(p || []);
-               setSecCaev(s || []); setDivCaev(d || []); setClassCaev(c || []);
-               setInstituciones(i || []);
+               setEstados((e as any) || []); setMunicipios((m as any) || []); setParroquias((p as any) || []);
+               setSecCaev((s as any) || []); setDivCaev((d as any) || []); setClassCaev((c as any) || []);
+               setInstituciones((i as any) || []);
                hasFetchedDropdowns.current = true;
            }
            setLoadingDropdowns(false);
@@ -110,16 +109,16 @@ const EmpresaFormDrawer: React.FC = () => {
                 {/* Sticky Header */}
                 <header className="flex-shrink-0 bg-ciec-bg p-4 flex justify-between items-center border-b border-ciec-border sticky top-0 z-10">
                      <div className="flex items-center space-x-4">
-                        <button 
-                            onClick={handleCancelClick} 
+                        <button
+                            onClick={handleCancelClick}
                             disabled={!isDirty || isSubmitting}
-                            className="bg-ciec-border text-ciec-text-primary font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                            className="border border-red-500 bg-transparent text-red-500 hover:bg-red-500 hover:text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-bg focus:ring-red-500"
                             title="Descartar borrador"
                         >
                             <RotateCcw className="w-5 h-5 mr-2" />
                             Descartar
                         </button>
-                         <button onClick={handleSubmit} disabled={isSubmitting || loadingDropdowns} className="bg-ciec-blue hover:bg-ciec-blue-hover text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-500 transition-colors flex items-center">
+                         <button onClick={handleSubmit} disabled={isSubmitting || loadingDropdowns} className="bg-transparent hover:bg-ciec-blue text-ciec-blue hover:text-white border border-ciec-blue font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ciec-bg focus:ring-ciec-blue">
                             {isSubmitting ? <Spinner size="sm" color="border-white" /> : <><Save className="w-5 h-5 mr-2" /> Guardar Establecimiento</>}
                         </button>
                     </div>

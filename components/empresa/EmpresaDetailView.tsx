@@ -70,10 +70,18 @@ const EmpresaDetailView: React.FC<EmpresaDetailViewProps> = ({ data, logoPreview
                         <DetailItem icon={<MapPin />} label="Dirección Fiscal" value={data.direccion_fiscal} />
                     </div>
                     <div>
-                        <DetailItem icon={<ImageIcon />} label="Logo" />
-                        <div className="ml-8 mt-2 w-32 h-32 rounded-lg bg-ciec-bg border border-ciec-border flex items-center justify-center text-ciec-text-secondary">
-                             {logoPreview ? <img src={logoPreview} alt="logo" className="w-full h-full object-contain rounded-md p-1" /> : <Building size={48}/>}
-                        </div>
+                        <DetailItem icon={<ImageIcon />} label="Logo">
+                           <div className="mt-2 w-48 h-48 rounded-lg bg-ciec-bg border border-ciec-border flex items-center justify-center text-ciec-text-secondary">
+                                {logoPreview ? (
+                                    <img src={logoPreview} alt="logo" className="w-full h-full object-contain rounded-md p-1" />
+                                ) : (
+                                    <div className="text-center">
+                                        <Building size={48}/>
+                                        <p className="text-xs italic mt-2">No disponible</p>
+                                    </div>
+                                )}
+                            </div>
+                        </DetailItem>
                     </div>
                 </div>
             </Fieldset>

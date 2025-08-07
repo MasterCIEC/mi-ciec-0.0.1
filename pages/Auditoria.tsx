@@ -67,8 +67,10 @@ const Auditoria: React.FC = () => {
                 setLoading(false);
                 return;
             }
+            
+            const typedData = data as any[];
 
-            const total = data.length;
+            const total = typedData.length;
             if (total === 0) {
                 setStats([]);
                 setLoading(false);
@@ -78,38 +80,38 @@ const Auditoria: React.FC = () => {
             // 2. Calcular las estadísticas en el orden de la vista de detalle de empresa
             const calculatedStats: AuditStat[] = [
                  // Datos de la Compañía
-                { label: 'Logo de Compañía', completed: data.filter(e => !!e.companias?.logo).length, total },
-                { label: 'Año de Fundación', completed: data.filter(e => e.companias?.ano_fundacion).length, total },
-                { label: 'Dirección Fiscal', completed: data.filter(e => e.companias?.direccion_fiscal).length, total },
+                { label: 'Logo de Compañía', completed: typedData.filter(e => !!e.companias?.logo).length, total },
+                { label: 'Año de Fundación', completed: typedData.filter(e => e.companias?.ano_fundacion).length, total },
+                { label: 'Dirección Fiscal', completed: typedData.filter(e => e.companias?.direccion_fiscal).length, total },
                 
                 // Datos del Establecimiento
-                { label: 'Nombre Establecimiento', completed: data.filter(e => !!e.nombre_establecimiento).length, total },
-                { label: 'Fecha de Apertura', completed: data.filter(e => !!e.fecha_apertura).length, total },
-                { label: 'Correos', completed: data.filter(e => !!e.email_principal).length, total },
-                { label: 'Teléfonos', completed: data.filter(e => !!e.telefono_principal_1).length, total },
+                { label: 'Nombre Establecimiento', completed: typedData.filter(e => !!e.nombre_establecimiento).length, total },
+                { label: 'Fecha de Apertura', completed: typedData.filter(e => !!e.fecha_apertura).length, total },
+                { label: 'Correos', completed: typedData.filter(e => !!e.email_principal).length, total },
+                { label: 'Teléfonos', completed: typedData.filter(e => !!e.telefono_principal_1).length, total },
                 
                 // Capital Humano
-                { label: 'Cantidad de Obreros', completed: data.filter(e => e.personal_obrero !== null && e.personal_obrero !== undefined).length, total },
-                { label: 'Cantidad de Empleados', completed: data.filter(e => e.personal_empleado !== null && e.personal_empleado !== undefined).length, total },
-                { label: 'Cantidad de Directivos', completed: data.filter(e => e.personal_directivo !== null && e.personal_directivo !== undefined).length, total },
-                { label: 'Persona de Contacto', completed: data.filter(e => e.integrantes && e.integrantes.length > 0).length, total },
+                { label: 'Cantidad de Obreros', completed: typedData.filter(e => e.personal_obrero !== null && e.personal_obrero !== undefined).length, total },
+                { label: 'Cantidad de Empleados', completed: typedData.filter(e => e.personal_empleado !== null && e.personal_empleado !== undefined).length, total },
+                { label: 'Cantidad de Directivos', completed: typedData.filter(e => e.personal_directivo !== null && e.personal_directivo !== undefined).length, total },
+                { label: 'Persona de Contacto', completed: typedData.filter(e => e.integrantes && e.integrantes.length > 0).length, total },
                 
                 // Ubicación Geográfica
-                { label: 'Estado', completed: data.filter(e => e.direcciones?.parroquias?.municipios?.estados?.id_estado).length, total },
-                { label: 'Municipio', completed: data.filter(e => e.direcciones?.parroquias?.municipios?.id_municipio).length, total },
-                { label: 'Parroquia', completed: data.filter(e => e.direcciones?.parroquias?.id_parroquia).length, total },
-                { label: 'Dirección Detallada', completed: data.filter(e => !!e.direcciones?.direccion_detallada).length, total },
-                { label: 'Coordenadas', completed: data.filter(e => !!e.direcciones?.latitud).length, total },
+                { label: 'Estado', completed: typedData.filter(e => e.direcciones?.parroquias?.municipios?.estados?.id_estado).length, total },
+                { label: 'Municipio', completed: typedData.filter(e => e.direcciones?.parroquias?.municipios?.id_municipio).length, total },
+                { label: 'Parroquia', completed: typedData.filter(e => e.direcciones?.parroquias?.id_parroquia).length, total },
+                { label: 'Dirección Detallada', completed: typedData.filter(e => !!e.direcciones?.direccion_detallada).length, total },
+                { label: 'Coordenadas', completed: typedData.filter(e => !!e.direcciones?.latitud).length, total },
                 
                 // Clasificación y Producción
-                { label: 'Sección CAEV', completed: data.filter(e => e.clases_caev?.divisiones_caev?.secciones_caev?.id_seccion).length, total },
-                { label: 'División CAEV', completed: data.filter(e => e.clases_caev?.divisiones_caev?.id_division).length, total },
-                { label: 'Clase CAEV', completed: data.filter(e => e.clases_caev?.id_clase).length, total },
-                { label: 'Productos', completed: data.filter(e => e.establecimiento_productos.length > 0).length, total },
-                { label: 'Procesos Productivos', completed: data.filter(e => e.establecimiento_procesos.length > 0).length, total },
+                { label: 'Sección CAEV', completed: typedData.filter(e => e.clases_caev?.divisiones_caev?.secciones_caev?.id_seccion).length, total },
+                { label: 'División CAEV', completed: typedData.filter(e => e.clases_caev?.divisiones_caev?.id_division).length, total },
+                { label: 'Clase CAEV', completed: typedData.filter(e => e.clases_caev?.id_clase).length, total },
+                { label: 'Productos', completed: typedData.filter(e => e.establecimiento_productos.length > 0).length, total },
+                { label: 'Procesos Productivos', completed: typedData.filter(e => e.establecimiento_procesos.length > 0).length, total },
                 
                 // Afiliaciones
-                { label: 'Afiliación a Gremio', completed: data.filter(e => e.afiliaciones.length > 0).length, total },
+                { label: 'Afiliación a Gremio', completed: typedData.filter(e => e.afiliaciones.length > 0).length, total },
             ];
             
             setStats(calculatedStats);
